@@ -36,3 +36,31 @@ docker cp apache2-php-mariadb:/etc/apache2/sites-available/000-default.conf file
 docker cp apache2-php-mariadb:/etc/apache2/apache2.conf files/apache2/
 docker cp apache2-php-mariadb:/etc/php/8.2/apache2/php.ini files/php/
 docker cp apache2-php-mariadb:/etc/mysql/mariadb.conf.d/50-server.cnf files/mariadb/
+
+Производим все необходимые манипуляции в файлах 
+
+Создаем в папке files папку supervisor и файл supervisord.conf со следующим содержимым:
+```
+[supervisord]
+nodaemon=true
+logfile=/dev/null
+user=root
+
+# apache2
+[program:apache2]
+command=/usr/sbin/apache2ctl -D FOREGROUND
+autostart=true
+autorestart=true
+startretries=3
+stderr_logfile=/proc/self/fd/2
+user=root
+
+# mariadb
+[program:mariadb]
+command=/usr/sbin/mariadbd --user=mysql
+autostart=true
+autorestart=true
+startretries=3
+stderr_logfile=/proc/self/fd/2
+user=mysql
+```
