@@ -25,7 +25,7 @@ RUN apt-get update && \
 
 Создайте контейнер apache2-php-mariadb из образа apache2-php-mariadb и запустите его в фоновом режиме с командой запуска bash.
 ``` docker run -ti -p 8000:80 --name apache2-php-mariadb apache2-php-mariadb /bin/bash```
-
+```
 mkdir -p files/apache2
 mkdir -p files/php
 mkdir -p files/mariadb
@@ -36,7 +36,7 @@ docker cp apache2-php-mariadb:/etc/apache2/sites-available/000-default.conf file
 docker cp apache2-php-mariadb:/etc/apache2/apache2.conf files/apache2/
 docker cp apache2-php-mariadb:/etc/php/8.2/apache2/php.ini files/php/
 docker cp apache2-php-mariadb:/etc/mysql/mariadb.conf.d/50-server.cnf files/mariadb/
-
+```
 Производим все необходимые манипуляции в файлах 
 
 Создаем в папке files папку supervisor и файл supervisord.conf со следующим содержимым:
@@ -64,3 +64,8 @@ startretries=3
 stderr_logfile=/proc/self/fd/2
 user=mysql
 ```
+Соберите образ контейнера с именем apache2-php-mariadb и запустите контейнер apache2-php-mariadb из образа apache2-php-mariadb. Проверьте наличие сайта WordPress в папке /var/www/html/. Проверьте изменения конфигурационного файла apache2.
+
+```docker build -t apache2-php-mariadb files```
+выдает ошибку и не загружает все файлы
+![error](./img/1.png)
