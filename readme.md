@@ -10,7 +10,7 @@
 
 # Выполнение
 После создания всех необходимых файлов/папок строим образ контейнера с именем apache2-php-mariadb при помощи команды:
-```docker build -t apache2-php-mariadb files``` 
+```docker build -t apache2-php-mariadb .``` 
 в докерфайл мы поместили следующий код:
 ```# create from debian image
 FROM debian:latest
@@ -24,14 +24,12 @@ RUN apt-get update && \
 Образ строился 173,2 секунды 
 
 Создайте контейнер apache2-php-mariadb из образа apache2-php-mariadb и запустите его в фоновом режиме с командой запуска bash.
-``` docker run -ti -p 8000:80 --name apache2-php-mariadb apache2-php-mariadb /bin/bash```
+``` docker run -d --name apache2-php-mariadb apache2-php-mariadb bash```
 ```
 mkdir -p files/apache2
 mkdir -p files/php
 mkdir -p files/mariadb
 
-docker build -t apache2-php-mariadb containers04
-docker run -d --name apache2-php-mariadb apache2-php-mariadb bash
 docker cp apache2-php-mariadb:/etc/apache2/sites-available/000-default.conf files/apache2/
 docker cp apache2-php-mariadb:/etc/apache2/apache2.conf files/apache2/
 docker cp apache2-php-mariadb:/etc/php/8.2/apache2/php.ini files/php/
@@ -66,6 +64,51 @@ user=mysql
 ```
 Соберите образ контейнера с именем apache2-php-mariadb и запустите контейнер apache2-php-mariadb из образа apache2-php-mariadb. Проверьте наличие сайта WordPress в папке /var/www/html/. Проверьте изменения конфигурационного файла apache2.
 
-```docker build -t apache2-php-mariadb files```
-выдает ошибку и не загружает все файлы
-![error](./img/1.png)
+## Создание базы данных и пользователя
+Создайте базу данных wordpress и пользователя wordpress с паролем wordpress в контейнере apache2-php-mariadb. Для этого, в контейнере apache2-php-mariadb, выполните команды:
+```
+mysql
+CREATE DATABASE wordpress;
+CREATE USER 'wordpress'@'localhost' IDENTIFIED BY 'wordpress';
+GRANT ALL PRIVILEGES ON wordpress.* TO 'wordpress'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+```
+## Создание файла конфигурации WordPress
+Откройте в браузере сайт WordPress по адресу ```http://localhost:8000/wordpress/```. 
+## Добавление файла конфигурации WordPress в Dockerfile
+Добавьте в файл Dockerfile следующие строки:
+```
+# copy the configuration file for wordpress from files/ directory
+COPY files/wp-config.php /var/www/html/wordpress/wp-config.php
+```
+## Запуск и тестирование
+Пересоберите образ контейнера с именем apache2-php-mariadb и запустите контейнер apache2-php-mariadb из образа apache2-php-mariadb. Проверьте работоспособность сайта WordPress.
+
+## Работает !!!
+![error](./img/2.png)
+![error](./img/3.png)
+![error](./img/4.png)
+
+# Ответьте на вопросы:
+
+Какие файлы конфигурации были изменены?
+* Были изменены файлы конфигурации для apache2, php, mariadb, supervisor и добавлен файл конфигурации WordPress (wp-config.php).
+
+За что отвечает инструкция `DirectoryIndex` в файле конфигурации apache2?
+* `DirectoryIndex` в файле конфигурации Apache определяет список файлов, которые сервер будет искать по умолчанию в директории, если запрос от клиента не указывает конкретный файл.
+
+Зачем нужен файл wp-config.php?
+* Файл wp-config.php в WordPress содержит основные настройки для подключения к базе данных, а также другие важные конфигурационные параметры, необходимые для работы сайта, такие как ключи безопасности, параметры кэширования и настройки языка.
+
+За что отвечает параметр post_max_size в файле конфигурации php?
+* Параметр post_max_size в файле конфигурации PHP определяет максимально допустимый размер данных, отправляемых через HTTP POST запросы.
+
+Укажите, на ваш взгляд, какие недостатки есть в созданном образе контейнера?
+* На мой взгляд, самый большой недостаток в созданном образе контейнера это то, что нужно очень часто пересобирать контейнер (при каждом изменениии) заново вводить команды.
+
+## Вывод:
+
+В результате выполнения лабораторной работы мы создали образ контейнера, предназначенный для запуска веб-сайта на базе Apache HTTP Server с поддержкой PHP (используя модуль mod_php) и базы данных MariaDB в среде Docker. Мы успешно проверили работоспособность сайта WordPress в этой среде, что подтверждает корректность нашей настройки и конфигурации.
+
+Проще было скачать с официального сайта WordPress .
